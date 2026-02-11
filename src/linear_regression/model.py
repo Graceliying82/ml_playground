@@ -9,6 +9,7 @@ Run tests with: pytest tests/test_linear_regression.py
 """
 
 import numpy as np
+from sklearn.linear_model import LinearRegression
 
 
 class LinearRegressionModel:
@@ -21,7 +22,7 @@ class LinearRegressionModel:
     """
 
     def __init__(self):
-        self.model = None
+        self.model = LinearRegression()
         self.feature_names = None
         self.is_fitted = False
 
@@ -41,6 +42,8 @@ class LinearRegressionModel:
         # Step 2: Fit it on X_train and y_train
         # Step 3: Store the model, feature_names, and set is_fitted to True
         # Step 4: Return self
+
+
 
         raise NotImplementedError("Implement the fit method")
 
