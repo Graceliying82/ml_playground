@@ -1,6 +1,7 @@
-numpy
-pandas
-matplotlib
-scikit-learn
-jupyter
-seaborn
+numpy==2.4.2
+pandas==3.0.0
+matplotlib==3.10.8
+scikit-learn==1.8.0
+jupyter==1.1.1
+seaborn==0.13.2
+black==26.1.0

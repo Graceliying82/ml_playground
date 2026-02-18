@@ -10,6 +10,7 @@ Run tests with: pytest tests/test_multiple_regression.py
 
 import numpy as np
 from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 
 
 class MultipleRegressionModel:
@@ -37,12 +38,18 @@ class MultipleRegressionModel:
         Returns:
             self
         """
-        # TODO: Implement model fitting
         # Step 1: Fit the model on X_train and y_train
         # Step 2: Store feature_names and set is_fitted to True
         # Step 3: Return self
 
-        raise NotImplementedError("Implement the fit method")
+        self.model.fit(X_train, y_train)
+
+        if feature_names is not None:
+            self.feature_names = feature_names
+
+        self.is_fitted = True
+
+        return self
 
     def predict(self, X):
         """Make predictions on new data.
@@ -56,11 +63,12 @@ class MultipleRegressionModel:
         Raises:
             RuntimeError: If the model has not been fitted yet.
         """
-        # TODO: Implement prediction
         # Step 1: Check that the model is fitted (raise RuntimeError if not)
         # Step 2: Use the model to predict and return results
 
-        raise NotImplementedError("Implement the predict method")
+        if not self.is_fitted:
+            raise RuntimeError("The model must be fitted before prediction.")
+        return self.model.predict(X)
 
     def evaluate(self, X_test, y_test):
         """Evaluate the model on test data.
@@ -76,7 +84,6 @@ class MultipleRegressionModel:
                 - "r2": R-squared score
                 - "mae": Mean Absolute Error
         """
-        # TODO: Implement evaluation
         # Step 1: Get predictions using self.predict()
         # Step 2: Compute MSE (use sklearn.metrics.mean_squared_error)
         # Step 3: Compute RMSE (square root of MSE)
@@ -84,7 +91,18 @@ class MultipleRegressionModel:
         # Step 5: Compute MAE (use sklearn.metrics.mean_absolute_error)
         # Step 6: Return a dict with keys: "mse", "rmse", "r2", "mae"
 
-        raise NotImplementedError("Implement the evaluate method")
+        predictions = self.predict(X_test)
+        MSE = mean_squared_error(y_test, predictions)
+        RMSE = np.sqrt(MSE)
+        R2 = r2_score(y_test, predictions)
+        MAE = mean_absolute_error(y_test, predictions)
+
+        return {
+            "mse": MSE,
+            "rmse": RMSE,
+            "r2": R2,
+            "mae": MAE
+        }
 
     def get_coefficients(self):
         """Get the model coefficients (weights and bias).
@@ -99,11 +117,29 @@ class MultipleRegressionModel:
         Raises:
             RuntimeError: If the model has not been fitted yet.
         """
-        # TODO: Implement coefficient extraction
         # Step 1: Check that the model is fitted
         # Step 2: Get weights from model.coef_ and bias from model.intercept_
         # Step 3: If feature_names exist, create a sorted list of
         #         (feature_name, weight) tuples sorted by |weight| descending
         # Step 4: Return the dict
 
-        raise NotImplementedError("Implement the get_coefficients method")
+        if not self.is_fitted:
+            raise RuntimeError("The model must be fitted to get coefficients.")
+        
+        weights = self.model.coef_
+        bias = self.model.intercept_
+
+        feature_importance = []
+        if self.feature_names is not None:
+            feature_importance = sorted(
+                zip(self.feature_names, weights),
+                key = lambda x: abs(x[1]),
+                reverse=True
+            )
+
+        return {
+            "weights": weights,
+            "bias": bias,
+            "feature_importance": feature_importance
+    
+        }

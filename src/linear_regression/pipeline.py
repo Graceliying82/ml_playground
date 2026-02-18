@@ -152,7 +152,9 @@ def run_pipeline():
     print(f"  {'Metric':<10} {'Train':>10} {'Test':>10}")
     print(f"  {'-'*30}")
     for key in ["mse", "rmse", "r2", "mae"]:
-        print(f"  {key.upper():<10} {train_metrics[key]:>10.4f} {test_metrics[key]:>10.4f}")
+        print(
+            f"  {key.upper():<10} {train_metrics[key]:>10.4f} {test_metrics[key]:>10.4f}"
+        )
 
     # Feature importance
     coeffs = model.get_coefficients()

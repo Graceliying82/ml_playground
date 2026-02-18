@@ -14,6 +14,10 @@ Run the full pipeline: python -m src.multiple_regression.pipeline
 """
 
 import numpy as np
+from sklearn.datasets import load_diabetes
+from sklearn.model_selection import train_test_split
+from .model import MultipleRegressionModel
+from .display import show_sample_predictions, plot_results
 
 
 def load_data():
@@ -41,12 +45,20 @@ def load_data():
             - y (np.ndarray): Target values, shape (442,)
             - feature_names (list[str]): Names of the 10 features
     """
-    # TODO: Load the Diabetes dataset
     # Step 1: Import load_diabetes from sklearn.datasets
     # Step 2: Call load_diabetes() to get the data
     # Step 3: Return X (data.data), y (data.target), feature_names (data.feature_names)
 
-    raise NotImplementedError("Implement the load_data function")
+    data = load_diabetes()
+
+    X = data.data
+    y = data.target
+    print(f"  Loaded Diabetes dataset with {X.shape[0]} samples and {X.shape[1]} features.")
+    print(f"  Feature names: {data.feature_names}")
+    
+    names = data.feature_names
+
+    return X, y, names
 
 
 def explore_data(X, y, feature_names):
@@ -65,8 +77,20 @@ def explore_data(X, y, feature_names):
     # - Feature statistics (min, max, mean for each feature)
     # - Check for any missing values (np.isnan)
 
-    raise NotImplementedError("Implement the explore_data function")
+    print(f"  Dataset shape: {X.shape[0]} samples, {X.shape[1]} features")
+    print(f"  Feature names: {feature_names}")
+    print(f"  Target statistics:")
+    print(f"    Min: {y.min():.2f}")
+    print(f"    Max: {y.max():.2f}")
+    print(f"    Mean: {y.mean():.2f}")
+    print(f"    Std: {y.std():.2f}")
+    print(f"  Feature statistics:")
+    for i, name in enumerate(feature_names):
+        print(f"    {name}: min={X[:, i].min():.2f}, max={X[:, i].max():.2f}, mean={X[:, i].mean():.2f}")
 
+    #Check for any missing values (np.isnan)
+    if np.isnan(X).any():
+        print("  Warning: Missing values detected in features.")
 
 def preprocess_data(X):
     """Standardize features to zero mean and unit variance.
@@ -89,7 +113,15 @@ def preprocess_data(X):
     # Step 4: Standardize: X_scaled = (X - means) / stds
     # Step 5: Return (X_scaled, means, stds)
 
-    raise NotImplementedError("Implement the preprocess_data function")
+    means = X.mean(axis=0)
+    stds = X.std(axis=0)
+
+    # Handle zero std by replacing with 1.0
+    stds[stds == 0] = 1.0
+
+    X_scaled = (X - means) / stds
+
+    return X_scaled, means, stds
 
 
 def split_data(X, y, test_ratio=0.2, random_seed=42):
@@ -109,15 +141,15 @@ def split_data(X, y, test_ratio=0.2, random_seed=42):
     # Step 2: Split X and y with the given test_ratio and random_seed
     # Step 3: Return (X_train, X_test, y_train, y_test)
 
-    raise NotImplementedError("Implement the split_data function")
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_ratio, random_state=random_seed)
 
+    return X_train, X_test, y_train, y_test
 
 def run_pipeline():
     """Run the full multiple feature regression pipeline.
 
     This is the main entry point that ties everything together.
     """
-    from .model import MultipleRegressionModel
 
     print("=" * 60)
     print("  Multiple Regression Pipeline — Diabetes Dataset")
@@ -154,7 +186,9 @@ def run_pipeline():
     print(f"  {'Metric':<10} {'Train':>10} {'Test':>10}")
     print(f"  {'-'*30}")
     for key in ["mse", "rmse", "r2", "mae"]:
-        print(f"  {key.upper():<10} {train_metrics[key]:>10.4f} {test_metrics[key]:>10.4f}")
+        print(
+            f"  {key.upper():<10} {train_metrics[key]:>10.4f} {test_metrics[key]:>10.4f}"
+        )
 
     # Feature importance
     coeffs = model.get_coefficients()
@@ -162,6 +196,12 @@ def run_pipeline():
     for name, weight in coeffs["feature_importance"]:
         bar = "#" * int(abs(weight) * 5)
         print(f"  {name:<15} {weight:>8.4f}  {bar}")
+
+    # --- Sample Predictions & Plots ---
+    predictions = model.predict(X_test)
+    show_sample_predictions(y_test, predictions)
+    plot_results(y_test, predictions, coeffs["feature_importance"],
+                 save_path="multiple_regression_results.png")
 
     print("\n" + "=" * 60)
     print("  Pipeline complete!")

@@ -43,8 +43,6 @@ class LinearRegressionModel:
         # Step 3: Store the model, feature_names, and set is_fitted to True
         # Step 4: Return self
 
-
-
         raise NotImplementedError("Implement the fit method")
 
     def predict(self, X):

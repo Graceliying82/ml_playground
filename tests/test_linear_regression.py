@@ -11,10 +11,10 @@ import pytest
 from src.linear_regression.model import LinearRegressionModel
 from src.linear_regression.pipeline import load_data, preprocess_data, split_data
 
-
 # ---------------------------------------------------------------------------
 # Model Tests
 # ---------------------------------------------------------------------------
+
 
 class TestLinearRegressionModel:
     """Tests for the LinearRegressionModel class."""
@@ -42,8 +42,9 @@ class TestLinearRegressionModel:
         model = LinearRegressionModel()
         model.fit(self.X, self.y)
         predictions = model.predict(self.X)
-        assert predictions.shape == self.y.shape, \
-            f"Expected shape {self.y.shape}, got {predictions.shape}"
+        assert (
+            predictions.shape == self.y.shape
+        ), f"Expected shape {self.y.shape}, got {predictions.shape}"
 
     def test_predict_before_fit_raises(self):
         model = LinearRegressionModel()
@@ -65,8 +66,9 @@ class TestLinearRegressionModel:
         model.fit(self.X, self.y)
         metrics = model.evaluate(self.X, self.y)
         expected_keys = {"mse", "rmse", "r2", "mae"}
-        assert set(metrics.keys()) == expected_keys, \
-            f"Expected keys {expected_keys}, got {set(metrics.keys())}"
+        assert (
+            set(metrics.keys()) == expected_keys
+        ), f"Expected keys {expected_keys}, got {set(metrics.keys())}"
 
     def test_evaluate_metrics_values(self):
         model = LinearRegressionModel()
@@ -74,8 +76,9 @@ class TestLinearRegressionModel:
         metrics = model.evaluate(self.X, self.y)
         assert metrics["mse"] >= 0, "MSE should be non-negative"
         assert metrics["rmse"] >= 0, "RMSE should be non-negative"
-        assert np.isclose(metrics["rmse"], np.sqrt(metrics["mse"])), \
-            "RMSE should be sqrt(MSE)"
+        assert np.isclose(
+            metrics["rmse"], np.sqrt(metrics["mse"])
+        ), "RMSE should be sqrt(MSE)"
         assert metrics["r2"] > 0.95, f"R² should be > 0.95, got {metrics['r2']}"
         assert metrics["mae"] >= 0, "MAE should be non-negative"
 
@@ -100,13 +103,15 @@ class TestLinearRegressionModel:
         coeffs = model.get_coefficients()
         importance = coeffs["feature_importance"]
         abs_weights = [abs(w) for _, w in importance]
-        assert abs_weights == sorted(abs_weights, reverse=True), \
-            "Feature importance should be sorted by |weight| descending"
+        assert abs_weights == sorted(
+            abs_weights, reverse=True
+        ), "Feature importance should be sorted by |weight| descending"
 
 
 # ---------------------------------------------------------------------------
 # Pipeline Tests
 # ---------------------------------------------------------------------------
+
 
 class TestPipeline:
     """Tests for pipeline helper functions."""
@@ -114,7 +119,9 @@ class TestPipeline:
     def test_load_data_shapes(self):
         X, y, feature_names = load_data()
         assert X.shape[0] == y.shape[0], "X and y should have same number of samples"
-        assert X.shape[1] == len(feature_names), "Number of features should match feature_names"
+        assert X.shape[1] == len(
+            feature_names
+        ), "Number of features should match feature_names"
         assert X.shape[0] > 10000, "California Housing should have >10k samples"
 
     def test_preprocess_data_standardized(self):
@@ -144,5 +151,6 @@ class TestPipeline:
         y = np.random.rand(100)
         result1 = split_data(X, y, random_seed=42)
         result2 = split_data(X, y, random_seed=42)
-        np.testing.assert_array_equal(result1[0], result2[0],
-                                       err_msg="Same seed should give same split")
+        np.testing.assert_array_equal(
+            result1[0], result2[0], err_msg="Same seed should give same split"
+        )

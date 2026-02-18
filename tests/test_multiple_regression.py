@@ -11,10 +11,10 @@ import pytest
 from src.multiple_regression.model import MultipleRegressionModel
 from src.multiple_regression.pipeline import load_data, preprocess_data, split_data
 
-
 # ---------------------------------------------------------------------------
 # Model Tests
 # ---------------------------------------------------------------------------
+
 
 class TestMultipleRegressionModel:
     """Tests for the MultipleRegressionModel class."""
@@ -24,8 +24,13 @@ class TestMultipleRegressionModel:
         np.random.seed(42)
         m = 300
         self.X = np.random.rand(m, 3)
-        self.y = (1 * self.X[:, 0] + 2 * self.X[:, 1] + 3 * self.X[:, 2]
-                  + 5 + np.random.randn(m) * 0.1)
+        self.y = (
+            1 * self.X[:, 0]
+            + 2 * self.X[:, 1]
+            + 3 * self.X[:, 2]
+            + 5
+            + np.random.randn(m) * 0.1
+        )
         self.feature_names = ["feature_1", "feature_2", "feature_3"]
 
     def test_fit_returns_self(self):
@@ -43,8 +48,9 @@ class TestMultipleRegressionModel:
         model = MultipleRegressionModel()
         model.fit(self.X, self.y)
         predictions = model.predict(self.X)
-        assert predictions.shape == self.y.shape, \
-            f"Expected shape {self.y.shape}, got {predictions.shape}"
+        assert (
+            predictions.shape == self.y.shape
+        ), f"Expected shape {self.y.shape}, got {predictions.shape}"
 
     def test_predict_before_fit_raises(self):
         model = MultipleRegressionModel()
@@ -65,8 +71,9 @@ class TestMultipleRegressionModel:
         model.fit(self.X, self.y)
         metrics = model.evaluate(self.X, self.y)
         expected_keys = {"mse", "rmse", "r2", "mae"}
-        assert set(metrics.keys()) == expected_keys, \
-            f"Expected keys {expected_keys}, got {set(metrics.keys())}"
+        assert (
+            set(metrics.keys()) == expected_keys
+        ), f"Expected keys {expected_keys}, got {set(metrics.keys())}"
 
     def test_evaluate_metrics_values(self):
         model = MultipleRegressionModel()
@@ -74,8 +81,9 @@ class TestMultipleRegressionModel:
         metrics = model.evaluate(self.X, self.y)
         assert metrics["mse"] >= 0, "MSE should be non-negative"
         assert metrics["rmse"] >= 0, "RMSE should be non-negative"
-        assert np.isclose(metrics["rmse"], np.sqrt(metrics["mse"])), \
-            "RMSE should be sqrt(MSE)"
+        assert np.isclose(
+            metrics["rmse"], np.sqrt(metrics["mse"])
+        ), "RMSE should be sqrt(MSE)"
         assert metrics["r2"] > 0.95, f"R² should be > 0.95, got {metrics['r2']}"
         assert metrics["mae"] >= 0, "MAE should be non-negative"
 
@@ -100,8 +108,9 @@ class TestMultipleRegressionModel:
         coeffs = model.get_coefficients()
         importance = coeffs["feature_importance"]
         abs_weights = [abs(w) for _, w in importance]
-        assert abs_weights == sorted(abs_weights, reverse=True), \
-            "Feature importance should be sorted by |weight| descending"
+        assert abs_weights == sorted(
+            abs_weights, reverse=True
+        ), "Feature importance should be sorted by |weight| descending"
 
     def test_handles_many_features(self):
         """Model should work with 10+ features (like the Diabetes dataset)."""
@@ -123,15 +132,16 @@ class TestMultipleRegressionModel:
 # Pipeline Tests
 # ---------------------------------------------------------------------------
 
+
 class TestPipeline:
     """Tests for pipeline helper functions."""
 
     def test_load_data_shapes(self):
         X, y, feature_names = load_data()
-        assert X.shape[0] == y.shape[0], \
-            "X and y should have same number of samples"
-        assert X.shape[1] == len(feature_names), \
-            "Number of features should match feature_names"
+        assert X.shape[0] == y.shape[0], "X and y should have same number of samples"
+        assert X.shape[1] == len(
+            feature_names
+        ), "Number of features should match feature_names"
         assert X.shape[0] > 400, "Diabetes dataset should have >400 samples"
         assert X.shape[1] == 10, "Diabetes dataset should have 10 features"
 
@@ -141,12 +151,14 @@ class TestPipeline:
         assert len(feature_names) == 10
 
     def test_preprocess_data_standardized(self):
-        X = np.array([
-            [1.0, 100.0, 10.0],
-            [2.0, 200.0, 20.0],
-            [3.0, 300.0, 30.0],
-            [4.0, 400.0, 40.0],
-        ])
+        X = np.array(
+            [
+                [1.0, 100.0, 10.0],
+                [2.0, 200.0, 20.0],
+                [3.0, 300.0, 30.0],
+                [4.0, 400.0, 40.0],
+            ]
+        )
         X_scaled, means, stds = preprocess_data(X)
         np.testing.assert_array_almost_equal(
             X_scaled.mean(axis=0), [0, 0, 0], decimal=10
@@ -165,10 +177,12 @@ class TestPipeline:
         """Constant feature (zero std) should not cause division by zero."""
         X = np.array([[1.0, 5.0], [2.0, 5.0], [3.0, 5.0]])
         X_scaled, _, stds = preprocess_data(X)
-        assert not np.any(np.isnan(X_scaled)), \
-            "Scaling should not produce NaN (handle zero std)"
-        assert not np.any(np.isinf(X_scaled)), \
-            "Scaling should not produce Inf (handle zero std)"
+        assert not np.any(
+            np.isnan(X_scaled)
+        ), "Scaling should not produce NaN (handle zero std)"
+        assert not np.any(
+            np.isinf(X_scaled)
+        ), "Scaling should not produce Inf (handle zero std)"
 
     def test_split_data_sizes(self):
         X = np.random.rand(100, 5)
@@ -193,6 +207,5 @@ class TestPipeline:
         result1 = split_data(X, y, random_seed=42)
         result2 = split_data(X, y, random_seed=42)
         np.testing.assert_array_equal(
-            result1[0], result2[0],
-            err_msg="Same seed should give same split"
+            result1[0], result2[0], err_msg="Same seed should give same split"
         )
