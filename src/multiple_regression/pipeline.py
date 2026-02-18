@@ -1,49 +1,64 @@
 """
-Linear Regression Pipeline — Level 3: Real-World Application
+Multiple Feature Regression Pipeline — Level 3: Real-World Application
 
 This module handles the end-to-end workflow:
-1. Load a real dataset (California Housing)
+1. Load a real dataset (Diabetes)
 2. Explore and preprocess the data
 3. Split into train/test sets
 4. Train the model
 5. Evaluate and report results
 
 Your task: Implement the TODO sections.
-Run tests with: pytest tests/test_linear_regression.py
-Run the full pipeline: python -m src.linear_regression.pipeline
+Run tests with: pytest tests/test_multiple_regression.py
+Run the full pipeline: python -m src.multiple_regression.pipeline
 """
 
 import numpy as np
+from sklearn.datasets import load_diabetes
+from sklearn.model_selection import train_test_split
+from .model import MultipleRegressionModel
+from .display import show_sample_predictions, plot_results
 
 
 def load_data():
-    """Load the California Housing dataset.
+    """Load the Diabetes dataset.
 
-    This dataset contains 20,640 samples with 8 features each.
-    The target is the median house value (in $100,000s).
+    This dataset contains 442 samples with 10 features each.
+    The target is a quantitative measure of disease progression
+    one year after baseline.
 
     Features:
-        - MedInc: Median income in block group
-        - HouseAge: Median house age in block group
-        - AveRooms: Average number of rooms per household
-        - AveBedrms: Average number of bedrooms per household
-        - Population: Block group population
-        - AveOccup: Average number of household members
-        - Latitude: Block group latitude
-        - Longitude: Block group longitude
+        - age: Age of the patient
+        - sex: Sex of the patient
+        - bmi: Body mass index
+        - bp: Average blood pressure
+        - s1: Total serum cholesterol (tc)
+        - s2: Low-density lipoproteins (ldl)
+        - s3: High-density lipoproteins (hdl)
+        - s4: Total cholesterol / HDL (tch)
+        - s5: Log of serum triglycerides level (ltg)
+        - s6: Blood sugar level (glu)
 
     Returns:
         tuple: (X, y, feature_names)
-            - X (np.ndarray): Features, shape (20640, 8)
-            - y (np.ndarray): Target values, shape (20640,)
-            - feature_names (list[str]): Names of the 8 features
+            - X (np.ndarray): Features, shape (442, 10)
+            - y (np.ndarray): Target values, shape (442,)
+            - feature_names (list[str]): Names of the 10 features
     """
-    # TODO: Load the California Housing dataset
-    # Step 1: Import fetch_california_housing from sklearn.datasets
-    # Step 2: Call fetch_california_housing() to get the data
+    # Step 1: Import load_diabetes from sklearn.datasets
+    # Step 2: Call load_diabetes() to get the data
     # Step 3: Return X (data.data), y (data.target), feature_names (data.feature_names)
 
-    raise NotImplementedError("Implement the load_data function")
+    data = load_diabetes()
+
+    X = data.data
+    y = data.target
+    print(f"  Loaded Diabetes dataset with {X.shape[0]} samples and {X.shape[1]} features.")
+    print(f"  Feature names: {data.feature_names}")
+    
+    names = data.feature_names
+
+    return X, y, names
 
 
 def explore_data(X, y, feature_names):
@@ -59,10 +74,23 @@ def explore_data(X, y, feature_names):
     # - Dataset shape (number of samples and features)
     # - Feature names
     # - Target statistics (min, max, mean, std)
+    # - Feature statistics (min, max, mean for each feature)
     # - Check for any missing values (np.isnan)
 
-    raise NotImplementedError("Implement the explore_data function")
+    print(f"  Dataset shape: {X.shape[0]} samples, {X.shape[1]} features")
+    print(f"  Feature names: {feature_names}")
+    print(f"  Target statistics:")
+    print(f"    Min: {y.min():.2f}")
+    print(f"    Max: {y.max():.2f}")
+    print(f"    Mean: {y.mean():.2f}")
+    print(f"    Std: {y.std():.2f}")
+    print(f"  Feature statistics:")
+    for i, name in enumerate(feature_names):
+        print(f"    {name}: min={X[:, i].min():.2f}, max={X[:, i].max():.2f}, mean={X[:, i].mean():.2f}")
 
+    #Check for any missing values (np.isnan)
+    if np.isnan(X).any():
+        print("  Warning: Missing values detected in features.")
 
 def preprocess_data(X):
     """Standardize features to zero mean and unit variance.
@@ -81,13 +109,19 @@ def preprocess_data(X):
     # TODO: Implement feature standardization
     # Step 1: Compute the mean of each feature (column)
     # Step 2: Compute the std of each feature (column)
-    # Step 3: Standardize: X_scaled = (X - means) / stds
-    # Step 4: Return (X_scaled, means, stds)
-    #
-    # Hint: Be careful with features that have zero std (constant features).
-    #       Replace zero std with 1.0 to avoid division by zero.
+    # Step 3: Handle zero std by replacing with 1.0
+    # Step 4: Standardize: X_scaled = (X - means) / stds
+    # Step 5: Return (X_scaled, means, stds)
 
-    raise NotImplementedError("Implement the preprocess_data function")
+    means = X.mean(axis=0)
+    stds = X.std(axis=0)
+
+    # Handle zero std by replacing with 1.0
+    stds[stds == 0] = 1.0
+
+    X_scaled = (X - means) / stds
+
+    return X_scaled, means, stds
 
 
 def split_data(X, y, test_ratio=0.2, random_seed=42):
@@ -107,18 +141,18 @@ def split_data(X, y, test_ratio=0.2, random_seed=42):
     # Step 2: Split X and y with the given test_ratio and random_seed
     # Step 3: Return (X_train, X_test, y_train, y_test)
 
-    raise NotImplementedError("Implement the split_data function")
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_ratio, random_state=random_seed)
 
+    return X_train, X_test, y_train, y_test
 
 def run_pipeline():
-    """Run the full linear regression pipeline.
+    """Run the full multiple feature regression pipeline.
 
     This is the main entry point that ties everything together.
     """
-    from .model import LinearRegressionModel
 
     print("=" * 60)
-    print("  Linear Regression Pipeline — California Housing Dataset")
+    print("  Multiple Regression Pipeline — Diabetes Dataset")
     print("=" * 60)
 
     # Step 1: Load data
@@ -141,7 +175,7 @@ def run_pipeline():
 
     # Step 5: Train and evaluate
     print("\n[5/5] Training and evaluating model...")
-    model = LinearRegressionModel()
+    model = MultipleRegressionModel()
     model.fit(X_train, y_train, feature_names=list(feature_names))
 
     # Evaluate on both sets
@@ -162,6 +196,12 @@ def run_pipeline():
     for name, weight in coeffs["feature_importance"]:
         bar = "#" * int(abs(weight) * 5)
         print(f"  {name:<15} {weight:>8.4f}  {bar}")
+
+    # --- Sample Predictions & Plots ---
+    predictions = model.predict(X_test)
+    show_sample_predictions(y_test, predictions)
+    plot_results(y_test, predictions, coeffs["feature_importance"],
+                 save_path="multiple_regression_results.png")
 
     print("\n" + "=" * 60)
     print("  Pipeline complete!")
